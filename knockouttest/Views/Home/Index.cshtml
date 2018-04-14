@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<script src="~/js/knockoutjs.js"></script>
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<p>First name: <input data-bind="value: firstName" /></p>
+<p>Last name: <input data-bind="value: lastName" /></p>
+<h2>Hello, <span data-bind="text: fullName"> </span>!</h2>
+<button id="submit" data-bind="click: submit">Submit</button>
+
+
+<script type="text/javascript">
+    // Here's my data model
+    var ViewModel = function(first, last) {
+        var self = this;
+        self.firstName = ko.observable(first);
+        self.lastName = ko.observable(last);
+     
+        self.fullName = ko.computed(function() {
+            return this.firstName() + " " + this.lastName();
+        }, this);
+        console.log("loaded!");
+    
+        $.getJSON("/Home/Names", function(data) {
+            self.firstName(data.firstName);
+            self.lastName(data.lastName);
+        });
+
+        self.submit = function() {
+            console.log(self.firstName());
+            console.log(ko.toJSON({firstName: self.firstName}));
+            $.ajax("/Home/Save", 
+            {
+                data: {firstName: self.firstName(), lastName: self.lastName()},
+                type: "post", 
+                dataType: "json",
+                success: function(result) { alert(result.fullName) }
+            });
+        };
+    };
+     
+    ko.applyBindings(new ViewModel("Planet", "Mars"));
+</script>
